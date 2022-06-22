@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For You</title>
+</head>
+<script>
+    window.addEventListener('load', onWndLoad, false);
+
+    function onWndLoad() {
+
+        var slider = document.querySelector('.slider');
+        var sliders = slider.children;
+
+
+
+
+        var initX = null;
+        var transX = 0;
+        var rotZ = 0;
+        var transY = 0;
+
+        var curSlide = null;
+
+        var Z_DIS = 50;
+        var Y_DIS = 10;
+        var TRANS_DUR = 0.4;
+
+        var images = document.querySelectorAll('img');
+        for (var i = 0; i < images.length; i++) {
+            images[i].onmousemove = function (e) {
+                e.preventDefault()
+
+            }
+            images[i].ondragstart = function (e) {
+                return false;
+
+            }
+        }
+
+        function init() {
+
+            var z = 0, y = 0;
+
+            for (var i = sliders.length - 1; i >= 0; i--) {
+                sliders[i].style.transform = 'translateZ(' + z + 'px) translateY(' + y + 'px)';
+
+                z -= Z_DIS;
+                y += Y_DIS;
+            }
+
+
+            attachEvents(sliders[sliders.length - 1]);
+
+
+
+        }
+        function attachEvents(elem) {
+            curSlide = elem;
+
+            curSlide.addEventListener('mousedown', slideMouseDown, false);
+            curSlide.addEventListener('touchstart', slideMouseDown, false);
+        }
+        init();
+        function slideMouseDown(e) {
+
+            if (e.touches) {
+                initX = e.touches[0].clientX;
+            }
+            else {
+                initX = e.pageX;
+            }
+
+
+            document.addEventListener('mousemove', slideMouseMove, false);
+            document.addEventListener('touchmove', slideMouseMove, false);
+
+            document.addEventListener('mouseup', slideMouseUp, false);
+            document.addEventListener('touchend', slideMouseUp, false);
+        }
+        var prevSlide = null;
+
+        function slideMouseMove(e) {
+            var mouseX;
+
+            if (e.touches) {
+                mouseX = e.touches[0].clientX;
+            }
+            else {
+                mouseX = e.pageX;
+            }
+
+            transX += mouseX - initX;
+            rotZ = transX / 20;
+
+            transY = -Math.abs(transX / 15);
+
+
+
+            curSlide.style.transition = 'none';
+            curSlide.style.webkitTransform = 'translateX(' + transX + 'px)' + ' rotateZ(' + rotZ + 'deg)' + ' translateY(' + transY + 'px)';
+            curSlide.style.transform = 'translateX(' + transX + 'px)' + ' rotateZ(' + rotZ + 'deg)' + ' translateY(' + transY + 'px)';
+            var j = 1;
+            //remains elements
+            for (var i = sliders.length - 2; i >= 0; i--) {
+
+                sliders[i].style.webkitTransform = 'translateX(' + transX / (2 * j) + 'px)' + ' rotateZ(' + rotZ / (2 * j) + 'deg)' + ' translateY(' + (Y_DIS * j) + 'px)' + ' translateZ(' + (-Z_DIS * j) + 'px)';
+                sliders[i].style.transform = 'translateX(' + transX / (2 * j) + 'px)' + ' rotateZ(' + rotZ / (2 * j) + 'deg)' + ' translateY(' + (Y_DIS * j) + 'px)' + ' translateZ(' + (-Z_DIS * j) + 'px)';
+                sliders[i].style.transition = 'none';
+                j++;
+            }
+
+
+
+            initX = mouseX;
+            e.preventDefault();
+            if (Math.abs(transX) >= curSlide.offsetWidth - 30) {
+
+                document.removeEventListener('mousemove', slideMouseMove, false);
+                document.removeEventListener('touchmove', slideMouseMove, false);
+                curSlide.style.transition = 'ease 0.2s';
+                curSlide.style.opacity = 0;
+                prevSlide = curSlide;
+                attachEvents(sliders[sliders.length - 2]);
+                slideMouseUp();
+                setTimeout(function () {
+
+
+
+
+
+                    slider.insertBefore(prevSlide, slider.firstChild);
+
+                    prevSlide.style.transition = 'none';
+                    prevSlide.style.opacity = '1';
+                    slideMouseUp();
+
+                }, 201);
+
+
+
+                return;
+            }
+        }
+        function slideMouseUp() {
+            transX = 0;
+            rotZ = 0;
+            transY = 0;
+
+            curSlide.style.transition = 'cubic-bezier(0,1.95,.49,.73) ' + TRANS_DUR + 's';
+
+            curSlide.style.webkitTransform = 'translateX(' + transX + 'px)' + 'rotateZ(' + rotZ + 'deg)' + ' translateY(' + transY + 'px)';
+            curSlide.style.transform = 'translateX(' + transX + 'px)' + 'rotateZ(' + rotZ + 'deg)' + ' translateY(' + transY + 'px)';
+            //remains elements
+            var j = 1;
+            for (var i = sliders.length - 2; i >= 0; i--) {
+                sliders[i].style.transition = 'cubic-bezier(0,1.95,.49,.73) ' + TRANS_DUR / (j + 0.9) + 's';
+                sliders[i].style.webkitTransform = 'translateX(' + transX + 'px)' + 'rotateZ(' + rotZ + 'deg)' + ' translateY(' + (Y_DIS * j) + 'px)' + ' translateZ(' + (-Z_DIS * j) + 'px)';
+                sliders[i].style.transform = 'translateX(' + transX + 'px)' + 'rotateZ(' + rotZ + 'deg)' + ' translateY(' + (Y_DIS * j) + 'px)' + ' translateZ(' + (-Z_DIS * j) + 'px)';
+
+                j++;
+            }
+
+            document.removeEventListener('mousemove', slideMouseMove, false);
+            document.removeEventListener('touchmove', slideMouseMove, false);
+
+        }
+
+
+    }
+</script>
+<style>
+    html,
+    body {
+        padding: 0;
+        margin: 0;
+    }
+
+    .container {
+        height: 100vh;
+        width: 100%;
+        background-image: url(https://www.hdwallpaperslife.com/wp-content/uploads/2018/11/love_hearts_red_background_4k.jpg);
+        background-position: center;
+        background-size: cover;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .slider div p {
+        color: hwb(0 3% 97%);
+        /* position: absolute; */
+        bottom: -65px;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 20px;
+        text-align: center;
+    }
+
+    .slider {
+
+        /* -webkit-animation: animation ease 1s; */
+        animation-delay: .8s;
+        animation-fill-mode: backwards;
+
+
+        margin: 60px auto 0 auto;
+        height: 360px;
+        width: 240px;
+        padding: 40px;
+        top: 100px;
+
+        perspective: 1000px;
+        transition: ease-in-out .2s;
+        /* -webkit-transform:rotateX(45deg);
+             -webkit-transform-stye:preserve-3d;
+                 position:absolute; */
+    }
+
+    /* .slider:active{ -webkit-transform:rotateZ(10deg);} */
+
+
+    .slide img {
+        text-align: center;
+        width: 100%;
+        height: 80%;
+        -webkit-user-drag: none;
+        /* user-drag: none; */
+        -moz-user-drag: none;
+        border-radius: 4px;
+    }
+
+    .slide {
+
+
+
+        -webkit-user-select: none;
+        user-select: none;
+        -moz-user-select: none;
+        position: absolute;
+        height: 100%;
+        width: 100%;
+
+        box-shadow: 0px 10px 30px 0px rgba(0, 0, 0, 0.3);
+        background: #fcfcfc;
+        -webkit-transform-style: preserve-3d;
+        transform-style: preserve-3d;
+        -moz-transform-style: preserve-3d;
+        text-align: center;
+        /* overflow:hidden; */
+        border: 12px white solid;
+        box-sizing: border-box;
+        border-bottom: 55px white solid;
+        border-radius: 5px;
+
+
+
+    }
+
+    .transition {
+        -webkit-transition: cubic-bezier(0, 1.95, .49, .73) .4s;
+        -moz-transition: cubic-bezier(0, 1.95, .49, .73) .4s;
+        transition: cubic-bezier(0, 1.95, .49, .73) .4s;
+    }
+</style>
+
+<body>
+    <div class="container">
+        <div class="slider">
+            <div class="slide"><img src="https://media.giphy.com/media/oF5oUYTOhvFnO/giphy.gif" />
+                <p>I love youuuu so much Ito pa yung isa kong gift for you.</p>
+                <p style="text-align: center;"></p><a href="https://github.com/Sevynclst/HI-BABY/blob/bcd73a3820c285a792ff5053084fe3030efb5614/I%20LOVE%20YOU,%20BABE.pdf">CLICK TO DOWNLOAD THIS FILE</a>
+            </div>
+            <div class="slide"><img src="https://media.giphy.com/media/kZiDpAW9d9fr2suuS7/giphy.gif" />
+                <p>MAHAAAL NA MAHAAL NA MAHAAAL NA MAHAAL KITA SUPERRR</p>
+            </div>
+            <div class="slide"><img src="https://media.giphy.com/media/dWrnYmDucWhDvkbLF6/giphy.gif" />
+                <p>Happy monthsaryyy langgaa, sana nagustuhan mo tong little surprise ko para sayo HIHI. </p>b</p>
+            </div>
+            <div class="slide"><img src="https://media.giphy.com/media/kZiDpAW9d9fr2suuS7/giphy.gif" />
+                <p>Ikaw yung taong hindi ko na talaga makikita sa iba kapag pinakawalan ko pa.</p>
+            </div>
+            <div class="slide"><img src="https://media.giphy.com/media/77V6jaAgtQPUgbdM9s/giphy.gif" />
+                <p>Ikaw yung pinakamagandang desisyon ko na nagawa sa tanang buhay ko.</p>
+            </div>
+            <div class="slide"><img src="https://media.giphy.com/media/ADT6J0Fo27335XMwqQ/giphy.gif" />
+                <p>Hys alam mo palagi akong happy and proud kasi ako yung girlfriend mo. Sa loob ng 2 months, napagtanto kong..</p>
+            </div>
+            <div class="slide"><img src="https://media.giphy.com/media/enrq327a3sMIJAS5jA/giphy.gif" />
+                <p>Kabado ako kanina kasi akala ko hindi talaga gagana tong code.. pero buti nalang nakisama siyaaaa HAHAHAHAAHA</p> 
+            </div> 
+            <div class="slide"><img src="https://media.giphy.com/media/3o6Zt6pelpla1zvizC/giphy.gif" />
+                <p>Yieeeeeee nakangiti ka na rin no? Ayaan damay damay na tayooo hmp HAHAHAHAHHA</p>
+            </div>
+            <div class="slide"><img src="https://media.giphy.com/media/MDJ9IbxxvDUQM/giphy.gif" />
+                <p>Mahal parin kita at walang magabago dun, ikaw lang talaga langga</p>
+            </div>
+            <div class="slide"><img src="https://media.giphy.com/media/FYZESn1YrsZNe4hVDU/giphy.gif" />
+                <p>Mas maraming months and years pa tayong magsasaya ng ganito baby kasi hanggang sa pumuti na yang buhok mo..</p>
+            </div>
+            <div class="slide"><img src="https://media.giphy.com/media/3mo3WBFrvVTYk/giphy.gif" />
+                <p>2 months na tayo.. kinikilig ako gagiiii HAHAHAHAHHAHAAHHAHAHA</p>
+            </div>
+            <div class="slide"><img src="https://media.giphy.com/media/IwGL1W9SISNLuIPJDM/giphy.gif" />
+                <p>Last time hindi ako nakapag effort ng malala kasi busy ako nun masyado kaya sana naka esmayl ang bebe na yarn ngayon.</p>
+            </div>
+            <div class="slide"><img src="https://media.giphy.com/media/H2u46cKU3VaXht6Iv9/giphy.gif" />
+                <p>Mas lalo pa kitang iintindihin palagi lalo na kapag tinotopak ang baby ko HIHI.</p>
+            </div>
+            <div class="slide"><img src="https://media.giphy.com/media/WUrKpJUmNAsxTzHhao/giphy.gif" />
+                <p>Ang saya lang palaging isipin na ganito ka kaimportante sakin. Hindi ako mapapagod sayo kahit kailan.</p>
+            </div>
+            <div class="slide"><img src="https://media.giphy.com/media/2dQ3FMaMFccpi/giphy.gif" />
+                <p>balakajan palagi ka na talagang massimp sakin, ahe WAHAHAHHAHAHAHAH</p>
+            </div>
+            <div class="slide"><img src="https://media.giphy.com/media/x28cIQSn19Tbi/giphy.gif" />
+                <p>Dsurb mong itrato ka ng ganito at mahalin ng sobra sobra. Kaya mula nung nasa akin ka na..</p>
+            </div>
+            <div class="slide"><img src="https://media.giphy.com/media/7y4Nc95399hsr24oYc/giphy.gif" />
+                <p>Babe, mula nung sinagot mo ako hanggang ngayon, wala na akong ibang inisip kundi pasayahin ka nalang talaga.</p>
+            </div>
+            <div class="slide"><img src="https://media.giphy.com/media/26FLdmIp6wJr91JAI/giphy.gif" />
+                <p>Sana kahit ano pa man yung dumating sa relasyon natin e wag kang magbago. Sana piliin parin san natin palagi yung isat isa.</p>
+            </div>
+            <div class="slide"><img src="https://media.giphy.com/media/13k4VSc3ngLPUY/giphy.gif"/>
+                <p>kasi nakilala ko yung napakagandang babae na katulad mo, sobrang saya ng rs natin at walang toxic.</p>
+            </div>
+            <div class="slide"><img src="https://pa1.narvii.com/7140/dc7f1eb4c8907fbedc9ecba29c792d7ac39e448dr1-480-480_hq.gif" />
+                <p>Babe gusto ko lang malaman mo na walang araw na hindi talaga ako nagpapasalamat kay Lord </p>
+            </div>
+            <div class="slide"><img src= "https://media.giphy.com/media/6shodvQmRUazToFAmV/giphy.gif" />
+                <p>Happy monthsary babyy. sana nakarating ka talaga dito HAHAHAHAHA i love youu, sobrang mahal kita.
+             </p>
+            </div>
+            <div class="slide"><img src="https://media.giphy.com/media/B0vFTrb0ZGDf2/giphy.gif" />
+                <p>literal lang talaga akong nakangiti habang ginagawa ko tong code na to for you.</p>
+            </div>
+            <div class="slide"><img src="https://media.giphy.com/media/Lr8qwlTrcVyzsZFOUQ/giphy.gif" />
+                <p>Wahahahahahahahah babeeeeeeee kinikilig ako wait.. waaaaaaah</p>
+            </div>
+        </div>
+    </div>
+</body>   
+
+</html>
